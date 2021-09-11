@@ -12,9 +12,17 @@ def run(*targets, environ=os.environ):
     Nanobuild().run(*targets, environ=environ)
 
 
-def import_file(file_name):
-    """Imports given file as a module, and returns the module."""
-    spec = importlib.util.spec_from_file_location("module.name", "file_name")
+def import_file(file_name, **kwargs):
+    """
+    Imports given file as a module, and returns the module.
+
+    :arg kwargs Variables which will be injected into the module before it is executed.
+    """
+    spec = importlib.util.spec_from_file_location("module.name", file_name)
     imported_module = importlib.util.module_from_spec(spec)
+
+    for key, value in kwargs.items():
+        setattr(imported_module, key, value)
+
     spec.loader.exec_module(imported_module)
     return imported_module

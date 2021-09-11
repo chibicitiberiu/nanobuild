@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import nanobuild as nb
 
 env = nb.Environment(

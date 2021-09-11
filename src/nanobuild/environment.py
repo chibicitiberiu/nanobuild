@@ -3,7 +3,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Union, List, Optional, Dict, Any, Iterable
 
-from . import Utility, Target
+from .utility import Utility
+from .target import Target
 from .builder import Builder, ASBuilder, CBuilder, CXXBuilder, LDLinkBuilder, CCLinkBuilder, CXXLinkBuilder, \
     StaticLinkBuilder
 
@@ -88,6 +89,7 @@ class Environment(object):
     # Misc operations
     #
     def clone(self) -> 'Environment':
+        """Returns a deep copy of this environment."""
         new_env = Environment()
         new_env.source_dir = self.source_dir
         new_env.build_dir = self.build_dir
@@ -194,3 +196,12 @@ class Environment(object):
         for key, value in self.__args.items():
             final[key] = Utility.flatten_args_list(value)
         return final
+
+    def for_subdir(self, subdir):
+        """Returns a sub-environment that is linked to the same variables and builders."""
+        new_env = Environment()
+        new_env.source_dir = self.source(subdir)
+        new_env.build_dir = self.dest(subdir)
+        new_env.__args = self.__args
+        new_env.builders = self.builders
+        return new_env

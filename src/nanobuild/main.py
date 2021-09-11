@@ -6,7 +6,8 @@ from typing import Dict
 
 import ninja_syntax
 
-from . import Target, Utility
+from .target import Target
+from .utility import Utility
 from .environment import Environment
 
 
