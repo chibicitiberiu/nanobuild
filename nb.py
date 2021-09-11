@@ -1,5 +1,7 @@
 import abc
 import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, Optional, Any, Iterable, Union, List
 
@@ -44,6 +46,7 @@ class Utility:
 
 
 class Builder(abc.ABC):
+    name: Union[str, List[str]] = 'default'
     multi_input = False
     autogenerate_output = False
 
@@ -59,6 +62,7 @@ class Builder(abc.ABC):
 
 
 class ASBuilder(Builder):
+    name = 'AS'
     multi_input = False
     autogenerate_output = True
 
@@ -76,6 +80,7 @@ class ASBuilder(Builder):
 
 
 class CBuilder(Builder):
+    name = 'CC'
     multi_input = False
     autogenerate_output = True
 
@@ -94,6 +99,7 @@ class CBuilder(Builder):
 
 
 class CXXBuilder(Builder):
+    name = ['CPP', 'CXX']
     multi_input = False
     autogenerate_output = True
 
@@ -112,6 +118,7 @@ class CXXBuilder(Builder):
 
 
 class PhonyBuilder(Builder):
+    name = 'Phony'
     multi_input = True
     autogenerate_output = False
 
@@ -120,6 +127,7 @@ class PhonyBuilder(Builder):
 
 
 class StaticLinkBuilder(Builder):
+    name = 'StaticLink'
     multi_input = True
     autogenerate_output = False
 
@@ -133,6 +141,7 @@ class StaticLinkBuilder(Builder):
 
 
 class LDLinkBuilder(Builder):
+    name = 'LDLink'
     multi_input = True
     autogenerate_output = False
 
@@ -148,6 +157,7 @@ class LDLinkBuilder(Builder):
 
 
 class CCLinkBuilder(Builder):
+    name = 'CCLink'
     multi_input = True
     autogenerate_output = False
 
@@ -163,6 +173,7 @@ class CCLinkBuilder(Builder):
 
 
 class CXXLinkBuilder(Builder):
+    name = ['CPPLink', 'CXXLink']
     multi_input = True
     autogenerate_output = False
 
@@ -178,36 +189,34 @@ class CXXLinkBuilder(Builder):
 
 
 class Target(abc.ABC):
-    def __init__(self, builder_id, inputs, output, environment):
+    def __init__(self, builder_id, inputs, output, deps, environment):
         self.builder_id = builder_id
         self.output = output
-        if isinstance(inputs, Iterable):
-            self.inputs = inputs
-        else:
-            self.inputs = [inputs]
+        self.inputs = Utility.flatten_list(inputs)
+        self.deps = Utility.flatten_list(deps)
         self.environment = environment
 
 
 class Environment(object):
 
-    DEFAULT_BUILDERS = {
-        'AS': ASBuilder(),
-        'CC': CBuilder(),
-        'CPP': CXXBuilder(),
-        'CXX': CXXBuilder(),
-        'LDLink': LDLinkBuilder(),
-        'CCLink': CCLinkBuilder(),
-        'CXXLink': CXXLinkBuilder(),
-        'StaticLink': StaticLinkBuilder(),
-        #'Phony': PhonyBuilder()
-    }
+    DEFAULT_BUILDERS = (
+        ASBuilder(),
+        CBuilder(),
+        CXXBuilder(),
+        CXXBuilder(),
+        LDLinkBuilder(),
+        CCLinkBuilder(),
+        CXXLinkBuilder(),
+        StaticLinkBuilder(),
+        #PhonyBuilder()
+    )
 
     def __init__(self,
                  source_dir: Union[str, Path] = '.',
                  build_dir: Union[str, Path] = 'build',
                  args: Optional[Dict[str, Any]] = None,
                  environment: Optional[Dict[str, Any]] = None,
-                 builders: Optional[Dict[str, Builder]] = None,
+                 builders: Optional[Iterable[Builder]] = None,
                  **kwargs):
 
         self.source_dir = Path(source_dir)
@@ -216,9 +225,10 @@ class Environment(object):
         self.env: Dict[str, Any] = environment or os.environ.copy()
 
         # setup builders
-        self.builders = Environment.DEFAULT_BUILDERS.copy()
+        self.builders: Dict[str, Builder] = {}
+        self.add_builders(Environment.DEFAULT_BUILDERS)
         if builders is not None:
-            builders.update(builders)
+            self.add_builders(builders)
 
         # add builder default vars
         for builder in self.builders.values():
@@ -334,8 +344,10 @@ class Environment(object):
     #
     # Builders
     #
-    def update_builders(self, **kwargs):
-        self.builders.update(kwargs)
+    def add_builders(self, builders: Iterable[Builder]):
+        for builder in builders:
+            for name in Utility.flatten_list(builder.name):
+                self.builders[name] = builder
 
     def preprocess_inputs(self, inputs):
         inputs = Utility.flatten_list(inputs)
@@ -347,9 +359,10 @@ class Environment(object):
                 new_inputs.append(input)
         return new_inputs
 
-    def build(self, builder_id, inputs, output=None, **kwargs) -> List[Target]:
+    def build(self, builder_id, inputs, output=None, deps = None, **kwargs) -> List[Target]:
         builder = self.builders[builder_id]
         inputs = self.preprocess_inputs(inputs)
+        deps = self.preprocess_inputs(deps)
         targets = []
 
         # Build env
@@ -372,7 +385,7 @@ class Environment(object):
                         input_file = self.dest(input_file.relative_to(self.source_dir))
 
                     output_item = builder.generate_output_file(input_file)
-                    targets.append(Target(builder_id, input_item, output_item, env))
+                    targets.append(Target(builder_id, input_item, output_item, deps, env))
                 return targets
             else:
                 raise ValueError("This builder only supports 1 input file!")
@@ -381,7 +394,7 @@ class Environment(object):
             output = self.dest(output)
 
         # Simple case
-        targets.append(Target(builder_id, inputs, output, env))
+        targets.append(Target(builder_id, inputs, output, deps, env))
         return targets
 
     def __getattr__(self, item):
@@ -406,6 +419,7 @@ class Nanobuild(object):
                 if id(target.environment) not in self.__environments.keys():
                     self.__environments[id(target.environment)] = target.environment
                 self._preprocess(*target.inputs)
+                self._preprocess(*target.deps)
 
     def _generate_build_ninja(self, *targets):
         with open('build.ninja', 'w') as out:
@@ -424,11 +438,12 @@ class Nanobuild(object):
             while len(queue) > 0:
                 target = queue.pop(0)
                 inputs = []
+                order_only = []
 
                 for input in target.inputs:
                     if isinstance(input, Target):
                         if input.output is None:
-                            # TODO: handle phony target
+                            # TODO: process phony targets
                             pass
                         else:
                             inputs.append(str(input.output.resolve()))
@@ -438,13 +453,27 @@ class Nanobuild(object):
                     else:
                         inputs.append(str(input))
 
+                for dep in target.deps:
+                    if isinstance(dep, Target):
+                        if dep.output is None:
+                            # TODO: process phony targets
+                            pass
+                        else:
+                            order_only.append(str(dep.output.resolve()))
+                        queue.append(dep)
+                    elif isinstance(dep, Path):
+                        order_only.append(str(dep.resolve()))
+                    else:
+                        order_only.append(str(dep))
+
                 output = target.output
                 if output is not None and isinstance(output, Path):
                     output = str(output.resolve())
 
                 writer.build(outputs=output,
                              rule=f"{target.builder_id}{id(target.environment)}",
-                             inputs=inputs)
+                             inputs=inputs,
+                             order_only=order_only)
 
             writer.close()
 
@@ -452,6 +481,9 @@ class Nanobuild(object):
         targets = Utility.flatten_list(targets)
         self._preprocess(*targets)
         self._generate_build_ninja(*targets)
+
+        # run ninja, pass argv
+        subprocess.run(['ninja', *sys.argv[1:]]).check_returncode()
 
 
 def run(*targets):

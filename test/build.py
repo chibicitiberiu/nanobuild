@@ -5,7 +5,11 @@ env = nb.Environment(
 )
 
 sources = env.source_glob('**/*.cpp')
-objects = env.CXX(sources)
+headers = [
+    env.source_glob('**/*.hpp'),
+    env.source_glob('**/*.h'),
+]
+objects = env.CXX(sources, deps=headers)
 binary = env.CXXLink(objects, 'test')
 
 nb.run(binary)
