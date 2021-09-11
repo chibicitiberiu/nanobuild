@@ -100,6 +100,5 @@ The `autogenerate_output` tells nanobuild if this builder can generate an output
 
 * find a more graceful way of handling batches (i.e. multiple input files to builders that can only take single inputs)
 * more builtin builders
-* call ninja directly from python, so we can use environment variables (the "env" field of the Environment class)
 * better error handling
-* store variables in `build.ninja` instead of resolving them at runtime
+* store variables in `build.ninja`
