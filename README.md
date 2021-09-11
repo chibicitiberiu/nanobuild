@@ -11,9 +11,11 @@ All of these reasons combined made me want to build my own build system that is 
 ### Example usage
 
 ##### build.py:
+
 ```Python
 #!/usr/bin/env python3
-import nb
+import nanobuild as nb
+
 env = nb.Environment(
     CCFLAGS=['-g']
 )

@@ -1,4 +1,4 @@
-import nb
+import nanobuild as nb
 
 env = nb.Environment(
     CCFLAGS=['-g']
