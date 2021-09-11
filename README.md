@@ -2,6 +2,12 @@
 
 A very simple and customizable build system made in Python that generates Ninja.
 
+### Installation
+
+```
+python3 -m pip install nanobuild
+```
+
 ### Why another build system?
 
 Modern build systems are cool, but for system programming where you need fine control over what gets compiled and how, a lot of build systems are inadequate and very difficult to control. CMake has dozens of variables that will change depending on the host configuration, and because of that it often feels like playing whack-a-mole whenever something about the build changes. Make is probably the best suited for that, but its syntax and features leave a lot to be desired. SCons is also a very good option, but you often feel like you're fighting the build system and it's not as fast as Ninja.

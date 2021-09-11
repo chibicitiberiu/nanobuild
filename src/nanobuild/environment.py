@@ -197,11 +197,16 @@ class Environment(object):
             final[key] = Utility.flatten_args_list(value)
         return final
 
-    def for_subdir(self, subdir):
-        """Returns a sub-environment that is linked to the same variables and builders."""
+    def for_subdir(self, subdir, buildsubdir=None):
+        """Returns a sub-environment that is linked to the same variables and builders.
+
+        :arg subdir The subdirectory
+        :arg buildsubdir The subdirectory to be used for build. If this is not set, subdir is used for both source
+        and build dirs.
+        """
         new_env = Environment()
         new_env.source_dir = self.source(subdir)
-        new_env.build_dir = self.dest(subdir)
+        new_env.build_dir = self.dest(buildsubdir or subdir)
         new_env.__args = self.__args
         new_env.builders = self.builders
         return new_env
