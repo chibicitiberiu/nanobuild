@@ -133,7 +133,7 @@ class Environment(object):
     #
     # Builders
     #
-    def add_builders(self, builders: Iterable[Builder]):
+    def add_builders(self, *builders):
         for builder in builders:
             for name in Utility.flatten_list(builder.name):
                 self.builders[name] = builder

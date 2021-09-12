@@ -31,8 +31,10 @@ class Utility:
         args = Utility.flatten_list(args)
         s = ''
         for arg in args:
-            if quote_spaces and ' ' in arg:
-                s += f'"{arg}" '
+            sarg = str(arg)
+            if quote_spaces and ' ' in sarg:
+                s += f'"{sarg}" '
             else:
-                s += str(arg) + ' '
+                s += f'{sarg} '
+
         return s.strip()
