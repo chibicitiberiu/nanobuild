@@ -36,9 +36,9 @@ class Environment(object):
 
         # setup builders
         self.builders: Dict[str, Builder] = {}
-        self.add_builders(Environment.DEFAULT_BUILDERS)
+        self.add_builders(*Environment.DEFAULT_BUILDERS)
         if builders is not None:
-            self.add_builders(builders)
+            self.add_builders(*builders)
 
         # add builder default vars
         for builder in self.builders.values():
