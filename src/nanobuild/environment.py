@@ -67,7 +67,7 @@ class Environment(object):
         self.__args.__setitem__(key, value)
 
     def append(self, **kwargs):
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             if key in self.__args.keys():
                 self.__args[key] += value
             else:

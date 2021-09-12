@@ -33,7 +33,7 @@ binary = env.CXXLink(objects, 'test')
 nb.run(binary)
 ```
 
-Usage: `./build.py && ninja`
+Usage: `./build.py`
 
 ### Environments
 
