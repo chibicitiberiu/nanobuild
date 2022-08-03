@@ -4,6 +4,10 @@ from typing import Union, List, Optional, Dict, Any
 
 
 class Builder(abc.ABC):
+    """
+    A builder can generate a command (or list of commands) that take inputs and generate outputs.
+    Think of it as a "recipe" in make.
+    """
     name: Union[str, List[str]] = 'default'
     multi_input = False
     autogenerate_output = False
@@ -64,12 +68,12 @@ class CXXBuilder(Builder):
     def default_vars(self):
         return {
             'CXX': 'g++',
-            'CCFLAGS': [],
-            'CXXFLAGS': []
+            'CXXFLAGS': [],
+            'CFLAGS': [],
         }
 
     def generate(self) -> Optional[str]:
-        return "{CXX} {CCFLAGS} {CXXFLAGS} -c -o {OUT} {IN}"
+        return "{CXX} {CXXFLAGS} {CFLAGS} -c -o {OUT} {IN}"
 
     def generate_output_file(self, source: Path) -> Optional[Path]:
         return source.with_suffix('.o')

@@ -1,3 +1,4 @@
+import pathlib
 from typing import Iterable
 
 
@@ -38,3 +39,13 @@ class Utility:
                 s += f'{sarg} '
 
         return s.strip()
+
+    @staticmethod
+    def path_to_string(path):
+        if path is None:
+            return None
+
+        if isinstance(path, pathlib.Path):
+            return str(path.resolve())
+
+        return str(path)

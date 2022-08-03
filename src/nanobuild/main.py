@@ -13,8 +13,8 @@ from .environment import Environment
 
 class Nanobuild(object):
     def __init__(self):
-
         self.__environments: Dict[int, Environment] = {}
+        self.__cwd = Path(".")
 
     def _preprocess(self, *targets):
         for target in targets:
@@ -23,6 +23,9 @@ class Nanobuild(object):
                     self.__environments[id(target.environment)] = target.environment
                 self._preprocess(*target.inputs)
                 self._preprocess(*target.deps)
+
+    def _normpath(self, path: Path):
+        return str(path.relative_to(self.__cwd))
 
     def _generate_build_ninja(self, *targets):
         with open('build.ninja', 'w') as out:
@@ -49,10 +52,10 @@ class Nanobuild(object):
                             # TODO: process phony targets
                             pass
                         else:
-                            inputs.append(str(input.output.resolve()))
+                            inputs.append(self._normpath(input.output))
                         queue.append(input)
                     elif isinstance(input, Path):
-                        inputs.append(str(input.resolve()))
+                        inputs.append(self._normpath(input))
                     else:
                         inputs.append(str(input))
 
@@ -62,16 +65,16 @@ class Nanobuild(object):
                             # TODO: process phony targets
                             pass
                         else:
-                            order_only.append(str(dep.output.resolve()))
+                            order_only.append(self._normpath(dep.output))
                         queue.append(dep)
                     elif isinstance(dep, Path):
-                        order_only.append(str(dep.resolve()))
+                        order_only.append(self._normpath(dep))
                     else:
                         order_only.append(str(dep))
 
                 output = target.output
                 if output is not None and isinstance(output, Path):
-                    output = str(output.resolve())
+                    output = self._normpath(output)
 
                 writer.build(outputs=output,
                              rule=f"{target.builder_id}{id(target.environment)}",

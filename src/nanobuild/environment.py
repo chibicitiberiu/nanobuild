@@ -148,7 +148,7 @@ class Environment(object):
                 new_inputs.append(input)
         return new_inputs
 
-    def build(self, builder_id, inputs, output=None, deps = None, **kwargs) -> List[Target]:
+    def build(self, builder_id, inputs, output=None, deps=None, **kwargs) -> List[Target]:
         builder = self.builders[builder_id]
         inputs = self.preprocess_inputs(inputs)
         deps = self.preprocess_inputs(deps)
