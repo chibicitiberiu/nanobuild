@@ -25,7 +25,10 @@ class Nanobuild(object):
                 self._preprocess(*target.deps)
 
     def _normpath(self, path: Path):
-        return str(path.relative_to(self.__cwd))
+        try:
+            return str(path.relative_to(self.__cwd))
+        except ValueError:
+            return path
 
     def _generate_build_ninja(self, *targets):
         with open('build.ninja', 'w') as out:
