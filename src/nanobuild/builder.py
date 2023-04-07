@@ -13,13 +13,30 @@ class Builder(abc.ABC):
     autogenerate_output = False
 
     def default_vars(self) -> Dict[str, Any]:
+        """
+        Gets the default variables that will be injected in the environment.
+        :return:
+        """
         return {}
 
     @abc.abstractmethod
     def generate(self) -> Optional[str]:
+        """
+        Generates the command used to build {IN} into {OUT}.
+        Variables can be accessed using {var_name}
+        :return:
+        """
         pass
 
     def generate_output_file(self, source: Path) -> Optional[Path]:
+        """
+        Generates an output file name from an input file name.
+        Path doesn't need to be changed, it is handled automatically.
+
+        Usually, this means using `source.with_suffix` to change the extension.
+        :param source: Source path
+        :return: Output path
+        """
         return None
 
 
