@@ -9,7 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src/nanobuild.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
     </content>
-    <orderEntry type="jdk" jdkName="Pipenv (examples)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Pipenv (nanobuild)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

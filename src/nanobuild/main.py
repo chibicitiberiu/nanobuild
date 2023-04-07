@@ -28,7 +28,7 @@ class Nanobuild(object):
         try:
             return str(path.relative_to(self.__cwd))
         except ValueError:
-            return path
+            return str(path)
 
     def _generate_build_ninja(self, *targets):
         with open('build.ninja', 'w') as out:
