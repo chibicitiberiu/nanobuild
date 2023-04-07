@@ -92,4 +92,7 @@ class Nanobuild(object):
         self._generate_build_ninja(*targets)
 
         # run ninja, pass argv
-        subprocess.run(['ninja', *sys.argv[1:]], env=environ).check_returncode()
+        try:
+            subprocess.run(['ninja', *sys.argv[1:]], env=environ).check_returncode()
+        except FileNotFoundError:
+            print('Could not find ninja executable! Is ninja installed?', file=sys.stderr)
