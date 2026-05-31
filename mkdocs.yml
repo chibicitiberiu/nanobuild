@@ -1,0 +1,37 @@
+site_name: nanobuild
+site_description: A simple, customizable Python build system that generates Ninja.
+repo_url: https://github.com/chibicitiberiu/nanobuild
+repo_name: chibicitiberiu/nanobuild
+docs_dir: doc
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Environments: environments.md
+  - Builders: builders.md
+  - Submodules: submodules.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences

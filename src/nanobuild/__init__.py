@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import os
+from pathlib import Path
 from types import ModuleType
 from typing import Any, Mapping
 
@@ -25,11 +27,41 @@ from .target import Target
 from .utility import Utility
 
 __all__ = [
-    'run', 'import_file',
+    'run', 'import_file', '__version__', '__build__',
     'Alias', 'Builder', 'Environment', 'Nanobuild', 'Target', 'Utility',
     'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder', 'CommandBuilder',
     'StaticLinkBuilder', 'LDLinkBuilder', 'CCLinkBuilder', 'CXXLinkBuilder',
 ]
+
+
+def _detect_version() -> str:
+    """Resolve the package version. The VERSION file is the single source of truth in a source
+    checkout; an installed package falls back to its baked-in metadata."""
+    version_file = Path(__file__).resolve().parents[2] / "VERSION"
+    if version_file.is_file():
+        return version_file.read_text(encoding="utf-8").strip()
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+        try:
+            return version("nanobuild")
+        except PackageNotFoundError:
+            return "0.0.0"
+    except ImportError:
+        return "0.0.0"
+
+
+def _detect_build() -> str:
+    """Build identifier (CI run number + commit), written to a generated _buildinfo module at
+    release time. Returns 'dev' for ordinary source/installed builds."""
+    try:
+        module = importlib.import_module("nanobuild._buildinfo")
+        return str(module.BUILD)
+    except (ImportError, AttributeError):
+        return "dev"
+
+
+__version__ = _detect_version()
+__build__ = _detect_build()
 
 
 def run(*targets: object, environ: Mapping[str, str] = os.environ) -> None:

@@ -1,6 +1,6 @@
 name: release
 
-# Publishes the package to PyPI when a version tag (e.g. v0.4) is pushed.
+# Publishes the package to PyPI when a version tag (e.g. v0.4) is pushed, then records the release.
 #
 # Publishing uses PyPI "trusted publishing" (OIDC) — no API token/secret is stored in GitHub.
 # One-time setup on PyPI (https://pypi.org/manage/project/nanobuild/settings/publishing/):
@@ -10,11 +10,16 @@ name: release
 #   - Workflow name:    release.yml
 #   - Environment:      pypi
 #
-# To cut a release: bump `version` in setup.cfg, commit, then tag and push:
-#   git tag v0.4 && git push origin v0.4
+# To cut a release:
+#   1. Set the version in the VERSION file (single source of truth) and add notes to CHANGELOG.md.
+#   2. Commit, then tag and push:  git tag v0.4 && git push origin v0.4
 #
-# (If you'd rather use an API token instead of trusted publishing, see the commented
-#  `password:` line in the publish job and add a PYPI_API_TOKEN repository secret.)
+# The version baked into the package comes from VERSION; the CI run number and commit are recorded
+# as nanobuild.__build__ and in the GitHub release name. After publishing, CHANGELOG.md is appended
+# to CHANGELOG_HISTORY.md under the version heading and reset for the next release.
+#
+# (If you'd rather use an API token than trusted publishing, see the commented `password:` line in
+#  the publish job and add a PYPI_API_TOKEN repository secret.)
 
 on:
   push:
@@ -37,15 +42,21 @@ jobs:
       - name: Run tests
         run: python -m pytest -ra
 
-      - name: Verify the tag matches the package version
+      - name: Verify the tag matches the VERSION file
         run: |
           TAG="${GITHUB_REF_NAME#v}"
-          PKG="$(python -c "import configparser; c=configparser.ConfigParser(); c.read('setup.cfg'); print(c['metadata']['version'])")"
-          echo "tag version: $TAG | package version: $PKG"
+          PKG="$(cat VERSION)"
+          echo "tag version: $TAG | VERSION file: $PKG"
           if [ "$TAG" != "$PKG" ]; then
-            echo "::error::Tag v$TAG does not match setup.cfg version $PKG"
+            echo "::error::Tag v$TAG does not match the VERSION file ($PKG)"
             exit 1
           fi
+
+      - name: Stamp build info (run number + commit)
+        run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          echo "BUILD = \"${GITHUB_RUN_NUMBER}+g${SHORT_SHA}\"" > src/nanobuild/_buildinfo.py
+          cat src/nanobuild/_buildinfo.py
 
       - name: Build sdist and wheel
         run: python -m build
@@ -75,3 +86,41 @@ jobs:
         # To use an API token instead of trusted publishing, uncomment:
         # with:
         #   password: ${{ secrets.PYPI_API_TOKEN }}
+
+  record:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # create the GitHub release and push the changelog rotation
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Check out master (not the tag) so the changelog rotation can be committed back.
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rotate changelog and prepare release notes
+        run: python scripts/release_changelog.py "$(cat VERSION)" --notes release_notes.md
+
+      - name: Create GitHub release
+        run: |
+          VERSION="$(cat VERSION)"
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "v${VERSION} (build ${GITHUB_RUN_NUMBER}, g${SHORT_SHA})" \
+            --notes-file release_notes.md
+
+      - name: Commit the changelog rotation
+        run: |
+          rm -f release_notes.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md CHANGELOG_HISTORY.md
+          git commit -m "Roll changelog for $GITHUB_REF_NAME [skip ci]"
+          git push origin HEAD:master

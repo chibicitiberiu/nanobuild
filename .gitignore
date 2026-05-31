@@ -5,3 +5,13 @@ dist/
 *.egg-info/
 .pytest_cache/
 .coverage
+.mypy_cache/
+
+# generated at release time by the CI build
+src/nanobuild/_buildinfo.py
+
+# mkdocs build output
+site/
+
+# transient release artifact written by the release workflow
+release_notes.md
