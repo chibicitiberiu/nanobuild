@@ -6,10 +6,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[project.optional-dependencies]
-test = ["pytest"]
-lint = ["mypy", "ruff"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
