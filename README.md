@@ -2,6 +2,8 @@
 
 A very simple and customizable build system made in Python that generates Ninja.
 
+📖 **Documentation: https://chibicitiberiu.github.io/nanobuild/**
+
 ### Installation
 
 ```
@@ -107,11 +109,12 @@ The `autogenerate_output` tells nanobuild if this builder can generate an output
 
 ### Documentation
 
-More detailed documentation lives in the [`doc/`](doc) directory:
+Full documentation is hosted at **https://chibicitiberiu.github.io/nanobuild/** (built from the
+[`doc/`](doc) directory):
 
-* [Environments](doc/environments.md) — creating, cloning and customizing environments, options, and paths.
-* [Builders](doc/builders.md) — the built-in builders and how to write your own.
-* [Submodules](doc/submodules.md) — multi-directory builds with `for_subdir` and `import_file`.
+* [Environments](https://chibicitiberiu.github.io/nanobuild/environments/) — creating, cloning and customizing environments, options, and paths.
+* [Builders](https://chibicitiberiu.github.io/nanobuild/builders/) — the built-in builders and how to write your own.
+* [Submodules](https://chibicitiberiu.github.io/nanobuild/submodules/) — multi-directory builds with `for_subdir` and `import_file`.
 
 ### Development
 

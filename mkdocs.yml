@@ -1,5 +1,6 @@
 site_name: nanobuild
 site_description: A simple, customizable Python build system that generates Ninja.
+site_url: https://chibicitiberiu.github.io/nanobuild/
 repo_url: https://github.com/chibicitiberiu/nanobuild
 repo_name: chibicitiberiu/nanobuild
 docs_dir: doc
