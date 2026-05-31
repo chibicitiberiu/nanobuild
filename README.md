@@ -63,7 +63,8 @@ The builders can also be accessed through the environment. Currently, these buil
 * `CCLink`
 * `CXXLink`
 * `StaticLink`
-* `Phony` (currently broken)
+* `Phony`
+* `Copy`
 
 To invoke a builder, you just have to invoke `env.Builder_Name(inputs, output, **kwargs)`. The function will return a `Target` object (or a list of target objects) that can be used as inputs to other targets.
 
@@ -77,18 +78,19 @@ Here is an example of how a builder looks like:
 
 ```Python
 class CXXBuilder(Builder):
+    name = ['CPP', 'CXX']
     multi_input = False
     autogenerate_output = True
 
     def default_vars(self):
         return {
             'CXX': 'g++',
-            'CCFLAGS': [],
-            'CXXFLAGS': []
+            'CXXFLAGS': [],
+            'CFLAGS': []
         }
 
     def generate(self) -> Optional[str]:
-        return "{CXX} {CCFLAGS} {CXXFLAGS} -c -o {OUT} {IN}"
+        return "{CXX} {CXXFLAGS} {CFLAGS} -c -o {OUT} {IN}"
 
     def generate_output_file(self, source: Path) -> Optional[Path]:
         return source.with_suffix('.o')
@@ -102,9 +104,31 @@ Some builders can only take in a single source file (like the CXX builder in thi
 
 The `autogenerate_output` tells nanobuild if this builder can generate an output file path from a source file path (i.e. replace .cpp with .o). Builders that have this capability should implement the `generate_output_file` method. The way this mechanism works is that nanobuild can take a list of input files, and if it detects that the builder isn't multi-input but it can generate output files, it will do that instead.
 
+### Documentation
+
+More detailed documentation lives in the [`doc/`](doc) directory:
+
+* [Environments](doc/environments.md) — creating, cloning and customizing environments, options, and paths.
+* [Builders](doc/builders.md) — the built-in builders and how to write your own.
+* [Submodules](doc/submodules.md) — multi-directory builds with `for_subdir` and `import_file`.
+
+### Development
+
+```
+python3 -m pip install -e ".[test,lint]"
+python3 -m pytest          # run the test suite
+python3 -m ruff check      # lint
+python3 -m mypy            # type-check
+```
+
+The test suite includes determinism guardrails that assert the generated `build.ninja` is
+reproducible, plus golden-file snapshots of the generated output. The codebase is fully type-hinted
+and checked with mypy and ruff (configured in `pyproject.toml`).
+
 ### TODOs
 
 * find a more graceful way of handling batches (i.e. multiple input files to builders that can only take single inputs)
 * more builtin builders
-* better error handling
-* store variables in `build.ninja`
+
+Recently done: options are now stored as variables in `build.ninja`, errors are more descriptive,
+and a `Copy` builder replaced the unused `commands.py` helpers.

@@ -1,6 +1,13 @@
+from __future__ import annotations
+
 import abc
+import os
 from pathlib import Path
-from typing import Union, List, Optional, Dict, Any
+from typing import Dict, List, Optional, Union
+
+# Option defaults a builder contributes to an environment: each option is either a scalar
+# string (e.g. the compiler name) or a list of string flags.
+Vars = Dict[str, Union[str, List[str]]]
 
 
 class Builder(abc.ABC):
@@ -9,10 +16,10 @@ class Builder(abc.ABC):
     Think of it as a "recipe" in make.
     """
     name: Union[str, List[str]] = 'default'
-    multi_input = False
-    autogenerate_output = False
+    multi_input: bool = False
+    autogenerate_output: bool = False
 
-    def default_vars(self) -> Dict[str, Any]:
+    def default_vars(self) -> Vars:
         """
         Gets the default variables that will be injected in the environment.
         :return:
@@ -45,7 +52,7 @@ class ASBuilder(Builder):
     multi_input = False
     autogenerate_output = True
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'AS': 'as',
             'ASFLAGS': []
@@ -63,7 +70,7 @@ class CBuilder(Builder):
     multi_input = False
     autogenerate_output = True
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'CC': 'gcc',
             'CCFLAGS': [],
@@ -82,7 +89,7 @@ class CXXBuilder(Builder):
     multi_input = False
     autogenerate_output = True
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'CXX': 'g++',
             'CXXFLAGS': [],
@@ -105,12 +112,28 @@ class PhonyBuilder(Builder):
         return None
 
 
+class CopyBuilder(Builder):
+    """Copies a single input file to its output location.
+
+    The command is chosen for the host platform at generation time. Ninja creates the output's
+    parent directory automatically, so no explicit ``mkdir`` step is needed.
+    """
+    name = 'Copy'
+    multi_input = False
+    autogenerate_output = False
+
+    def generate(self) -> Optional[str]:
+        if os.name == 'nt':
+            return "copy /Y {IN} {OUT}"
+        return "cp {IN} {OUT}"
+
+
 class StaticLinkBuilder(Builder):
     name = 'StaticLink'
     multi_input = True
     autogenerate_output = False
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'AR': 'ar',
         }
@@ -124,7 +147,7 @@ class LDLinkBuilder(Builder):
     multi_input = True
     autogenerate_output = False
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'LD': 'ld',
             'LINKFLAGS': [],
@@ -140,7 +163,7 @@ class CCLinkBuilder(Builder):
     multi_input = True
     autogenerate_output = False
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'CC': 'gcc',
             'LINKFLAGS': [],
@@ -156,7 +179,7 @@ class CXXLinkBuilder(Builder):
     multi_input = True
     autogenerate_output = False
 
-    def default_vars(self):
+    def default_vars(self) -> Vars:
         return {
             'CXX': 'g++',
             'LINKFLAGS': [],
@@ -165,3 +188,10 @@ class CXXLinkBuilder(Builder):
 
     def generate(self) -> Optional[str]:
         return "{CXX} {LINKFLAGS} -o {OUT} {IN} {LIBS}"
+
+
+__all__ = [
+    'Builder', 'Vars',
+    'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder',
+    'StaticLinkBuilder', 'LDLinkBuilder', 'CCLinkBuilder', 'CXXLinkBuilder',
+]

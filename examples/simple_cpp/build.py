@@ -11,6 +11,7 @@ headers = [
     env.source_glob('**/*.h'),
 ]
 objects = env.CXX(sources, deps=headers)
-binary = env.CXXLink(objects, 'test')
+objects_alias = env.Phony(objects, 'my_alias_for_objects')
+binary = env.CXXLink(objects_alias, 'test')
 
 nb.run(binary)

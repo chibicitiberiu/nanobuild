@@ -1,26 +1,39 @@
+from __future__ import annotations
+
 import os
 from copy import deepcopy
 from pathlib import Path
-from typing import Union, List, Optional, Dict, Any, Iterable
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
+from .alias import Alias
+from .builder import (
+    ASBuilder,
+    Builder,
+    CBuilder,
+    CCLinkBuilder,
+    CopyBuilder,
+    CXXBuilder,
+    CXXLinkBuilder,
+    LDLinkBuilder,
+    PhonyBuilder,
+    StaticLinkBuilder,
+)
+from .target import InputLike, Target
 from .utility import Utility
-from .target import Target
-from .builder import Builder, ASBuilder, CBuilder, CXXBuilder, LDLinkBuilder, CCLinkBuilder, CXXLinkBuilder, \
-    StaticLinkBuilder
 
 
 class Environment(object):
 
-    DEFAULT_BUILDERS = (
+    DEFAULT_BUILDERS: Tuple[Builder, ...] = (
         ASBuilder(),
         CBuilder(),
-        CXXBuilder(),
         CXXBuilder(),
         LDLinkBuilder(),
         CCLinkBuilder(),
         CXXLinkBuilder(),
         StaticLinkBuilder(),
-        #PhonyBuilder()
+        PhonyBuilder(),
+        CopyBuilder()
     )
 
     def __init__(self,
@@ -28,11 +41,19 @@ class Environment(object):
                  build_dir: Union[str, Path] = 'build',
                  args: Optional[Dict[str, Any]] = None,
                  builders: Optional[Iterable[Builder]] = None,
-                 **kwargs):
-
-        self.source_dir = Path(source_dir)
-        self.build_dir = Path(build_dir)
-        self.__args: Dict[str, object] = {}
+                 **kwargs: Any) -> None:
+        """
+        Create a new Environment
+        :param source_dir: Directory where source files are located. Defaults to current working directory.
+        :param build_dir: Directory where build files will be placed. Defaults to 'build' directory, relative to current
+        working directory.
+        :param args: Dictionary containing options and their values.
+        :param builders: List of custom builders to be added to this environment, in addition to all the built-in ones.
+        :param kwargs: All other named arguments will be appended to the list of options.
+        """
+        self.source_dir: Path = Path(source_dir)
+        self.build_dir: Path = Path(build_dir)
+        self.__args: Dict[str, Any] = {}
 
         # setup builders
         self.builders: Dict[str, Builder] = {}
@@ -54,56 +75,106 @@ class Environment(object):
     # property setters/getters
     #
 
-    def get(self, key):
-        return self.__args.__getitem__(key)
+    def get(self, key: str) -> Any:
+        """
+        Gets value of an option
+        :param key: Name of option
+        :return: Value of option
+        """
+        return self[key]
 
-    def __getitem__(self, key):
-        return self.__args.__getitem__(key)
+    def __getitem__(self, key: str) -> Any:
+        """
+        Gets value of an option
+        :param key: Name of option
+        :return: Value of option
+        """
+        try:
+            return self.__args[key]
+        except KeyError:
+            available = ', '.join(sorted(self.__args)) or '(none)'
+            raise KeyError(f"No option named {key!r}. Defined options: {available}") from None
 
-    def set(self, key, value):
-        return self.__args.__setitem__(key, value)
-
-    def __setitem__(self, key, value):
+    def set(self, key: str, value: Any) -> None:
+        """
+        Sets value of an option. If option already exists, its value is replaced.
+        :param key: Name of option
+        :param value: New value of option
+        :return: None
+        """
         self.__args.__setitem__(key, value)
 
-    def append(self, **kwargs):
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Sets value of an option. If option already exists, its value is replaced.
+        :param key: Name of option
+        :param value: New value of option
+        :return: None
+        """
+        self.__args.__setitem__(key, value)
+
+    def append(self, **kwargs: Any) -> None:
+        """
+        Appends given values to options.
+
+        If an option does not exist, it is added to the dictionary with the given value.
+        If an option already exists, the new value is combined with the existing one using
+        the addition operator (+), e.g. lists are concatenated and strings are joined.
+
+        :param kwargs: Options to append, as named arguments.
+        :return: None
+        """
         for key, value in kwargs.items():
             if key in self.__args.keys():
                 self.__args[key] += value
             else:
                 self.__args[key] = value
 
-    def replace(self, **kwargs):
+    def replace(self, **kwargs: Any) -> None:
         self.__args.update(kwargs)
 
-    def pop(self, key):
+    def pop(self, key: str) -> Any:
         return self.__args.pop(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         self.__args.__delitem__(key)
 
-    def __iter__(self):
-        return self.__args.items()
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        return iter(self.__args.items())
 
     #
     # Misc operations
     #
-    def clone(self) -> 'Environment':
+    def clone(self,
+              source_dir: Optional[Union[str, Path]] = None,
+              build_dir: Optional[Union[str, Path]] = None,
+              args: Optional[Dict[str, Any]] = None,
+              builders: Optional[Iterable[Builder]] = None,
+              **kwargs: Any) -> 'Environment':
         """Returns a deep copy of this environment."""
         new_env = Environment()
-        new_env.source_dir = self.source_dir
-        new_env.build_dir = self.build_dir
+        new_env.source_dir = Path(source_dir) if source_dir is not None else self.source_dir
+        new_env.build_dir = Path(build_dir) if build_dir is not None else self.build_dir
+
         new_env.__args = deepcopy(self.__args)
+        if args is not None:
+            new_env.replace(**args)
+        if kwargs is not None:
+            new_env.replace(**kwargs)
+
         new_env.builders = deepcopy(self.builders)
+        if builders is not None:
+            new_env.add_builders(*builders)
+
         return new_env
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__args.__repr__()
 
     #
     # Files
     #
-    def source(self, path: Union[str, Path]):
+    def source(self, path: Union[str, Path]) -> Path:
         """
         Returns a Path object relative to the source directory.
         :param path:
@@ -115,10 +186,16 @@ class Environment(object):
             return path
         return Path(self.source_dir, path)
 
-    def source_glob(self, pattern):
-        return list(self.source_dir.glob(pattern))
+    def source_glob(self, pattern: str) -> List[Path]:
+        """
+        Returns a sorted list of paths in the source directory matching the given glob pattern.
 
-    def dest(self, path: Union[str, Path]):
+        Results are sorted so that the generated build is reproducible regardless of the order
+        in which the underlying filesystem happens to enumerate directory entries.
+        """
+        return sorted(self.source_dir.glob(pattern))
+
+    def dest(self, path: Union[str, Path]) -> Path:
         """
         Returns a Path object relative to the destination directory.
         :param path:
@@ -133,80 +210,119 @@ class Environment(object):
     #
     # Builders
     #
-    def add_builders(self, *builders):
+    def add_builders(self, *builders: Builder) -> None:
         for builder in builders:
             for name in Utility.flatten_list(builder.name):
                 self.builders[name] = builder
 
-    def preprocess_inputs(self, inputs):
-        inputs = Utility.flatten_list(inputs)
-        new_inputs = []
-        for input in inputs:
+    def preprocess_inputs(self, inputs: Optional[InputLike]) -> List[Union[Path, Target]]:
+        new_inputs: List[Union[Path, Target]] = []
+        for input in Utility.flatten_list(inputs):
             if isinstance(input, str):
                 new_inputs.append(self.source(input))
             else:
                 new_inputs.append(input)
         return new_inputs
 
-    def build(self, builder_id, inputs, output=None, deps=None, **kwargs) -> List[Target]:
+    def build(self,
+              builder_id: str,
+              inputs: InputLike,
+              output: Optional[Union[str, Path]] = None,
+              deps: Optional[InputLike] = None,
+              **kwargs: Any) -> List[Target]:
+        if builder_id not in self.builders:
+            available = ', '.join(sorted(self.builders))
+            raise ValueError(f"Unknown builder {builder_id!r}. Available builders: {available}")
         builder = self.builders[builder_id]
-        inputs = self.preprocess_inputs(inputs)
-        deps = self.preprocess_inputs(deps)
-        targets = []
+        prepared_inputs = self.preprocess_inputs(inputs)
+        prepared_deps = self.preprocess_inputs(deps)
+        targets: List[Target] = []
 
         # Build env
         env = self
         if kwargs is not None and len(kwargs) > 0:
-            env = self.clone()
-            env.replace(**kwargs)
+            env = self.clone(**kwargs)
 
-        # No output, we must be able to generate it
-        if output is None and not builder.multi_input:
-            if builder.autogenerate_output:
-                # builder can autogenerate outputs, so we can emit multiple targets
-                for input_item in inputs:
-                    # obtain output file from input
-                    input_file = input_item
-                    if isinstance(input_item, Target):
-                        input_file = input_item.output
+        # Handle phony targets
+        if builder_id == 'Phony':
+            if output is None:
+                raise ValueError("Output for Phony target should specify the alias name!")
+            targets.append(Target(builder_id, prepared_inputs, Alias(str(output)), prepared_deps, env))
 
-                    if input_file.is_relative_to(self.source_dir):
-                        input_file = self.dest(input_file.relative_to(self.source_dir))
+        elif output is None:
+            # No output given: only builders that can derive one from each input are allowed.
+            if builder.multi_input or not builder.autogenerate_output:
+                raise ValueError(
+                    f"Builder {builder_id!r} requires an explicit output file name "
+                    f"(it cannot generate one automatically).")
 
-                    output_item = builder.generate_output_file(input_file)
-                    targets.append(Target(builder_id, input_item, output_item, deps, env))
-                return targets
+            # builder can autogenerate outputs, so we can emit multiple targets
+            for input_item in prepared_inputs:
+                # obtain output file from input
+                input_file: Union[Path, Target, None] = input_item
+                if isinstance(input_item, Target):
+                    input_file = input_item.output if isinstance(input_item.output, Path) else None
+
+                if isinstance(input_file, Path) and input_file.is_relative_to(self.source_dir):
+                    input_file = self.dest(input_file.relative_to(self.source_dir))
+
+                output_item = builder.generate_output_file(input_file) if isinstance(input_file, Path) else None
+                targets.append(Target(builder_id, input_item, output_item, prepared_deps, env))
+            return targets
+
+        else:
+            resolved_output: Optional[Path]
+            if isinstance(output, str):
+                resolved_output = self.dest(output)
             else:
-                raise ValueError("This builder only supports 1 input file!")
+                resolved_output = output
+            targets.append(Target(builder_id, prepared_inputs, resolved_output, prepared_deps, env))
 
-        if output is not None and isinstance(output, str):
-            output = self.dest(output)
-
-        # Simple case
-        targets.append(Target(builder_id, inputs, output, deps, env))
         return targets
 
-    def __getattr__(self, item):
-        if item in self.builders.keys():
+    def __getattr__(self, item: str) -> Callable[..., List[Target]]:
+        # Internal/dunder probes (copy, pickle, ...) must raise AttributeError without touching
+        # self.builders, which is itself looked up here and would otherwise recurse before __init__.
+        if item.startswith('_'):
+            raise AttributeError(item)
+        builders = self.__dict__.get('builders', {})
+        if item in builders:
             return lambda inputs, output=None, **kwargs: self.build(item, inputs, output, **kwargs)
-        raise AttributeError
+        available = ', '.join(sorted(builders)) or '(none)'
+        raise AttributeError(
+            f"{type(self).__name__!r} object has no attribute or builder {item!r}. "
+            f"Available builders: {available}")
 
-    def prepare(self):
-        final = {}
+    def prepare(self) -> Dict[str, str]:
+        final: Dict[str, str] = {}
         for key, value in self.__args.items():
             final[key] = Utility.flatten_args_list(value)
         return final
 
-    def for_subdir(self, subdir, buildsubdir=None):
+    def for_subdir(self,
+                   subdir: Union[str, Path],
+                   build_subdir: Optional[Union[str, Path]] = None,
+                   deep_clone: bool = False) -> 'Environment':
         """Returns a sub-environment that is linked to the same variables and builders.
 
         :arg subdir The subdirectory
-        :arg buildsubdir The subdirectory to be used for build. If this is not set, subdir is used for both source
+        :arg build_subdir The subdirectory to be used for build. If this is not set, subdir is used for both source
         and build dirs.
+        :arg deep_clone If true, a deep clone is created instead of a shallow clone.
         """
-        new_env = Environment()
-        new_env.source_dir = self.source(subdir)
-        new_env.build_dir = self.dest(buildsubdir or subdir)
-        new_env.__args = self.__args
-        new_env.builders = self.builders
+        source_dir = self.source(subdir)
+        build_dir = self.dest(build_subdir or subdir)
+
+        if deep_clone:
+            # clone() already produces independent (deep-copied) options and builders;
+            # leave them isolated from the parent.
+            new_env = self.clone(source_dir=source_dir,
+                                 build_dir=build_dir)
+        else:
+            # Shallow: share the parent's option store and builders by reference, so changes
+            # made through either environment are visible in both.
+            new_env = Environment(source_dir=source_dir,
+                                  build_dir=build_dir)
+            new_env.__args = self.__args
+            new_env.builders = self.builders
         return new_env

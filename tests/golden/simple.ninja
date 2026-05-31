@@ -1,0 +1,22 @@
+# environment 0
+e0_AS = as
+e0_ASFLAGS = 
+e0_CC = gcc
+e0_CCFLAGS = -g
+e0_CFLAGS = 
+e0_CXX = g++
+e0_CXXFLAGS = 
+e0_LD = ld
+e0_LINKFLAGS = 
+e0_LIBS = 
+e0_AR = ar
+
+rule CXX_0
+  command = ${e0_CXX} ${e0_CXXFLAGS} ${e0_CFLAGS} -c -o $out $in
+rule CXXLink_0
+  command = ${e0_CXX} ${e0_LINKFLAGS} -o $out $in ${e0_LIBS}
+
+build build/app: CXXLink_0 objs
+build objs: phony build/a.o build/b.o
+build build/a.o: CXX_0 src/a.cpp
+build build/b.o: CXX_0 src/b.cpp
