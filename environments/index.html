@@ -1,0 +1,826 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A simple, customizable Python build system that generates Ninja.">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../builders/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Environments - nanobuild</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#environments" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="nanobuild" class="md-header__button md-logo" aria-label="nanobuild" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            nanobuild
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Environments
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/chibicitiberiu/nanobuild" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chibicitiberiu/nanobuild
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="nanobuild" class="md-nav__button md-logo" aria-label="nanobuild" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    nanobuild
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/chibicitiberiu/nanobuild" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    chibicitiberiu/nanobuild
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating environments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating environments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-constructor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloning-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloning environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#submodule-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#locating-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locating files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-things" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building things
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../builders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Builders
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../submodules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Submodules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating environments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating environments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-constructor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloning-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloning environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#submodule-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#locating-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locating files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-things" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building things
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h1>
+<p>One of the core concepts in <em>nanobuild</em> is the <code>Environment</code>, which is a collection of options and builders.</p>
+<h2 id="creating-environments">Creating environments<a class="headerlink" href="#creating-environments" title="Permanent link">&para;</a></h2>
+<h3 id="the-constructor">The constructor<a class="headerlink" href="#the-constructor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">()</span>
+</code></pre></div>
+<p>The constructor allows setting options in 2 ways, using the <code>args</code> named argument which accepts a dictionary, or using named arguments.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">CXX</span><span class="o">=</span><span class="s1">&#39;g++&#39;</span><span class="p">,</span>
+                     <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+                         <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="s1">&#39;gcc&#39;</span>
+                     <span class="p">})</span>
+</code></pre></div>
+<p>The <code>source_dir</code> and <code>build_dir</code> arguments allow changing the directory where the source code is located, and where the build files will be placed. These are, of course, optional; by default, the current working directory will be used as the <code>source_dir</code>, and a <code>build</code> directory will be used for the build files.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">source_dir</span><span class="o">=</span><span class="s1">&#39;src&#39;</span><span class="p">,</span>
+                     <span class="n">build_dir</span><span class="o">=</span><span class="s1">&#39;build&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>The <code>builders</code> argument allows adding custom builders. See <a href="./">the page about environments</a> for more details.</p>
+<h3 id="cloning-environments">Cloning environments<a class="headerlink" href="#cloning-environments" title="Permanent link">&para;</a></h3>
+<p>Another method of creating an environment is to clone an existing one, which can be done through the <code>clone</code> method. This will create a deep copy of the current environment.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="s1">&#39;-O2&#39;</span><span class="p">)</span>
+<span class="c1"># ...</span>
+
+<span class="n">debug</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">CONFIGURATION</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
+<span class="n">debug</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-g&#39;</span><span class="p">])</span>
+
+<span class="n">release</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">CONFIGURATION</span><span class="o">=</span><span class="s1">&#39;release&#39;</span><span class="p">)</span>
+<span class="n">release</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-Wall&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>                    <span class="c1"># [&#39;-O2&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">debug</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>                  <span class="c1"># [&#39;-O2&#39;, &#39;-g&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">release</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>                <span class="c1"># [&#39;-O2&#39;, &#39;-Wall&#39;]</span>
+</code></pre></div>
+<p>The <code>clone</code> method has the same arguments as the constructor, and they allow customizing the cloned environment:</p>
+<ul>
+<li>the <code>source_dir</code> or <code>build_dir</code> arguments allow modifying the directory where source files are located, and where build files will be placed.</li>
+<li>builders in the <code>builders</code> argument will be added, as if the <code>add_builders</code> method was called.  </li>
+<li><code>args</code> and any other named argument (<code>kwargs</code>) will replace variables that already exist in the environment, as if the <code>replace</code> method was called.</li>
+</ul>
+<h3 id="submodule-workflow">Submodule workflow<a class="headerlink" href="#submodule-workflow" title="Permanent link">&para;</a></h3>
+<p>The <code>for_subdir</code> method allows creating an environment that shares all the options and builders with the existing environment, but the source and build directories are a subdirectory of the directory set in the current environment.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">source_dir</span><span class="o">=</span><span class="s1">&#39;src&#39;</span><span class="p">,</span>
+                     <span class="n">build_dir</span><span class="o">=</span><span class="s1">&#39;build&#39;</span><span class="p">)</span>
+<span class="c1"># ...</span>
+
+<span class="n">mylib_env1</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">for_subdir</span><span class="p">(</span><span class="s1">&#39;mylib&#39;</span><span class="p">)</span>                     <span class="c1"># source_dir is now &#39;src/mylib&#39;</span>
+                                                         <span class="c1"># build_dir is now &#39;build/mylib&#39;</span>
+
+<span class="n">mylib_env2</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">for_subdir</span><span class="p">(</span><span class="s1">&#39;mylib&#39;</span><span class="p">,</span> <span class="s1">&#39;build_mylib&#39;</span><span class="p">)</span>      <span class="c1"># source_dir is now &#39;src/mylib&#39;</span>
+                                                         <span class="c1"># build_dir is now &#39;build/build_mylib&#39;</span>
+
+<span class="n">mylib_env3</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">for_subdir</span><span class="p">(</span><span class="s1">&#39;mylib&#39;</span><span class="p">,</span>                     <span class="c1"># same as above, but using named argument</span>
+                            <span class="n">build_subdir</span><span class="o">=</span><span class="s1">&#39;build_mylib&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>Note that any changes to the options or builders of one environment will be reflected in all the other ones. If this behavior is not desired, set <code>deep_clone=True</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">])</span>
+<span class="n">module1_env</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">for_subdir</span><span class="p">(</span><span class="s1">&#39;module1&#39;</span><span class="p">)</span>
+<span class="n">module2_env</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">for_subdir</span><span class="p">(</span><span class="s1">&#39;module2&#39;</span><span class="p">,</span> <span class="n">deep_clone</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>                    <span class="c1"># [&#39;-O2&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">module1_env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>            <span class="c1"># [&#39;-O2&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">module2_env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>            <span class="c1"># [&#39;-O2&#39;]</span>
+
+<span class="n">env</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-g&#39;</span><span class="p">])</span>
+<span class="n">module1_env</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-Wall&#39;</span><span class="p">])</span>
+<span class="n">module2_env</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-Werror&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>                    <span class="c1"># [&#39;-O2&#39;, &#39;-g&#39;, &#39;-Wall&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">module1_env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>            <span class="c1"># [&#39;-O2&#39;, &#39;-g&#39;, &#39;-Wall&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">module2_env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>            <span class="c1"># [&#39;-O2&#39;, &#39;-Werror&#39;]</span>
+</code></pre></div>
+<h2 id="customizing-options">Customizing options<a class="headerlink" href="#customizing-options" title="Permanent link">&para;</a></h2>
+<p>Options can be customized in a number of ways. Environments allow setting options using the same way as dictionaries:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">()</span>
+
+<span class="n">env</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">])</span>
+<span class="n">env</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;-g&#39;</span><span class="p">])</span>
+<span class="c1"># or</span>
+<span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">]</span>
+<span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-g&#39;</span><span class="p">]</span>
+
+<span class="c1"># Deleting is also possible:</span>
+<span class="n">env</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="k">del</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">]</span>
+</code></pre></div>
+<p>To set multiple options at the same time, there are 2 convenient methods: <code>replace</code> and <code>append</code>. For both, if the provided option doesn't exist, it is created with the given value. However, if the option already exists:</p>
+<ul>
+<li>the <code>replace</code> method will behave in a similar way to <code>dict.update</code>: it will replace the value of the existing option with the provided one.</li>
+<li>the <code>append</code> method will append to the existing variable, the value provided (through the use of the + operator)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nanobuild</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-g&#39;</span><span class="p">],</span>
+                     <span class="n">SOMESTRING</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+
+<span class="n">env1</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+<span class="n">env1</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">],</span>
+             <span class="n">SOMESTRING</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">env1</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>           <span class="c1"># [&#39;-O2&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">env1</span><span class="p">[</span><span class="s1">&#39;SOMESTRING&#39;</span><span class="p">])</span>       <span class="c1"># bar</span>
+
+<span class="n">env2</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+<span class="n">env2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">],</span>
+            <span class="n">SOMESTRING</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">env2</span><span class="p">[</span><span class="s1">&#39;CFLAGS&#39;</span><span class="p">])</span>           <span class="c1"># [&#39;-g&#39;, &#39;-O2&#39;]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">env2</span><span class="p">[</span><span class="s1">&#39;SOMESTRING&#39;</span><span class="p">])</span>       <span class="c1"># foobar</span>
+</code></pre></div>
+<h2 id="locating-files">Locating files<a class="headerlink" href="#locating-files" title="Permanent link">&para;</a></h2>
+<p>The source and build directories are configured through the environment. The convenient <code>source</code>
+and <code>dest</code> methods generate file paths to things in the source directory, or in the build directory:</p>
+<div class="highlight"><pre><span></span><code><span class="n">sources</span> <span class="o">=</span> <span class="p">[</span> <span class="n">env</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="s1">&#39;a.c&#39;</span><span class="p">),</span> <span class="n">env</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="s1">&#39;b.c&#39;</span><span class="p">)</span> <span class="p">]</span>
+<span class="n">sources</span> <span class="o">+=</span> <span class="n">env</span><span class="o">.</span><span class="n">source_glob</span><span class="p">(</span><span class="s1">&#39;**/*.cpp&#39;</span><span class="p">)</span>                   <span class="c1"># glob is also supported</span>
+
+<span class="n">build_file</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">dest</span><span class="p">(</span><span class="s1">&#39;a.o&#39;</span><span class="p">)</span>                             <span class="c1"># relative to build directory</span>
+</code></pre></div>
+<p><code>source_glob</code> returns its matches in sorted order, so the resulting build is reproducible regardless
+of the order the underlying filesystem reports files in. Absolute paths passed to <code>source</code>/<code>dest</code> are
+returned unchanged.</p>
+<h2 id="building-things">Building things<a class="headerlink" href="#building-things" title="Permanent link">&para;</a></h2>
+<p>To get something to build, you invoke a builder through the environment:</p>
+<div class="highlight"><pre><span></span><code><span class="n">targets</span> <span class="o">=</span> <span class="n">env</span><span class="o">.&lt;</span><span class="n">BuilderName</span><span class="o">&gt;</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+<p>Each call returns a list of <code>Target</code> objects, which can be passed as inputs to other builders to
+form the dependency graph. The built-in builders are <code>AS</code>, <code>CC</code>, <code>CPP</code>/<code>CXX</code>, <code>LDLink</code>, <code>CCLink</code>,
+<code>CPPLink</code>/<code>CXXLink</code>, <code>StaticLink</code>, <code>Phony</code>/<code>Depends</code>, <code>Copy</code>, and <code>Command</code>. A full reference — including each builder's command,
+options, output handling, and how to write your own — lives in <strong><a href="../builders/">Builders</a></strong>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">objects</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">CXX</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">source_glob</span><span class="p">(</span><span class="s1">&#39;**/*.cpp&#39;</span><span class="p">))</span>   <span class="c1"># compile every .cpp to a .o</span>
+<span class="n">binary</span>  <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">CXXLink</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="s1">&#39;app&#39;</span><span class="p">)</span>            <span class="c1"># link the objects into an executable</span>
+<span class="n">nb</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>                                   <span class="c1"># generate build.ninja and run ninja</span>
+</code></pre></div>
+<p>Extra named arguments (<code>**kwargs</code>) override environment options for that single call only, by
+internally cloning the environment — the original environment is left untouched:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># build just this file without optimisation, leaving env&#39;s CXXFLAGS intact</span>
+<span class="n">debug_obj</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">CXX</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="s1">&#39;tricky.cpp&#39;</span><span class="p">),</span> <span class="n">CXXFLAGS</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-O0&#39;</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">])</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
