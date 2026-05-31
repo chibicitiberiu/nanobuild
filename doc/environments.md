@@ -167,7 +167,7 @@ targets = env.<BuilderName>(inputs, output=None, deps=None, **kwargs)
 
 Each call returns a list of `Target` objects, which can be passed as inputs to other builders to
 form the dependency graph. The built-in builders are `AS`, `CC`, `CPP`/`CXX`, `LDLink`, `CCLink`,
-`CPPLink`/`CXXLink`, `StaticLink`, `Phony`, and `Copy`. A full reference — including each builder's command,
+`CPPLink`/`CXXLink`, `StaticLink`, `Phony`/`Depends`, `Copy`, and `Command`. A full reference — including each builder's command,
 options, output handling, and how to write your own — lives in **[Builders](builders.md)**.
 
 ```Python

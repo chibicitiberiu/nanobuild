@@ -63,8 +63,9 @@ The builders can also be accessed through the environment. Currently, these buil
 * `CCLink`
 * `CXXLink`
 * `StaticLink`
-* `Phony`
+* `Phony` (or `Depends`)
 * `Copy`
+* `Command`
 
 To invoke a builder, you just have to invoke `env.Builder_Name(inputs, output, **kwargs)`. The function will return a `Target` object (or a list of target objects) that can be used as inputs to other targets.
 
@@ -127,8 +128,8 @@ and checked with mypy and ruff (configured in `pyproject.toml`).
 
 ### TODOs
 
-* find a more graceful way of handling batches (i.e. multiple input files to builders that can only take single inputs)
-* more builtin builders
+* more builtin builders as needs arise
 
-Recently done: options are now stored as variables in `build.ninja`, errors are more descriptive,
-and a `Copy` builder replaced the unused `commands.py` helpers.
+Recently done: options are stored as variables in `build.ninja`; errors are more descriptive;
+batch mapping via an `output=` callback; `Copy`, `Command`, and `Depends` builders (the first
+replacing the unused `commands.py` helpers).

@@ -11,6 +11,7 @@ from .builder import (
     Builder,
     CBuilder,
     CCLinkBuilder,
+    CommandBuilder,
     CopyBuilder,
     CXXBuilder,
     CXXLinkBuilder,
@@ -20,6 +21,10 @@ from .builder import (
 )
 from .target import InputLike, Target
 from .utility import Utility
+
+# Accepted forms for a builder's ``output`` argument: an explicit name/path, a callable that maps
+# each input to an output (batch mode, single-input builders only), or None (autogenerate/phony).
+OutputArg = Union[str, Path, Callable[[Any], Union[str, Path]], None]
 
 
 class Environment(object):
@@ -33,7 +38,8 @@ class Environment(object):
         CXXLinkBuilder(),
         StaticLinkBuilder(),
         PhonyBuilder(),
-        CopyBuilder()
+        CopyBuilder(),
+        CommandBuilder()
     )
 
     def __init__(self,
@@ -224,16 +230,29 @@ class Environment(object):
                 new_inputs.append(input)
         return new_inputs
 
+    def _resolve_output(self, output: Union[str, Path]) -> Path:
+        """Resolve an output name to a Path: strings are placed under the build directory."""
+        if isinstance(output, str):
+            return self.dest(output)
+        return output
+
     def build(self,
               builder_id: str,
               inputs: InputLike,
-              output: Optional[Union[str, Path]] = None,
+              output: OutputArg = None,
               deps: Optional[InputLike] = None,
               **kwargs: Any) -> List[Target]:
         if builder_id not in self.builders:
             available = ', '.join(sorted(self.builders))
             raise ValueError(f"Unknown builder {builder_id!r}. Available builders: {available}")
         builder = self.builders[builder_id]
+
+        # The per-invocation command for Command targets travels as a kwarg so the public call
+        # signature stays uniform; pull it out before the rest of kwargs become option overrides.
+        command = kwargs.pop('command', None)
+        if isinstance(builder, CommandBuilder) and command is None:
+            raise ValueError("The Command builder requires a 'command=...' argument.")
+
         prepared_inputs = self.preprocess_inputs(inputs)
         prepared_deps = self.preprocess_inputs(deps)
         targets: List[Target] = []
@@ -244,10 +263,22 @@ class Environment(object):
             env = self.clone(**kwargs)
 
         # Handle phony targets
-        if builder_id == 'Phony':
-            if output is None:
-                raise ValueError("Output for Phony target should specify the alias name!")
+        if isinstance(builder, PhonyBuilder):
+            if output is None or callable(output):
+                raise ValueError(f"{builder_id} target requires an alias name as its output.")
             targets.append(Target(builder_id, prepared_inputs, Alias(str(output)), prepared_deps, env))
+
+        elif callable(output):
+            # Batch mode: map a single-input builder over each input, deriving the output per item.
+            if builder.multi_input:
+                raise ValueError(
+                    f"Builder {builder_id!r} consumes all its inputs into a single output; "
+                    f"a per-input output function only works with single-input builders.")
+            for input_item in prepared_inputs:
+                source = input_item.output if isinstance(input_item, Target) else input_item
+                resolved = self._resolve_output(output(source))
+                targets.append(Target(builder_id, input_item, resolved, prepared_deps, env, command=command))
+            return targets
 
         elif output is None:
             # No output given: only builders that can derive one from each input are allowed.
@@ -271,12 +302,8 @@ class Environment(object):
             return targets
 
         else:
-            resolved_output: Optional[Path]
-            if isinstance(output, str):
-                resolved_output = self.dest(output)
-            else:
-                resolved_output = output
-            targets.append(Target(builder_id, prepared_inputs, resolved_output, prepared_deps, env))
+            targets.append(Target(builder_id, prepared_inputs, self._resolve_output(output),
+                                  prepared_deps, env, command=command))
 
         return targets
 

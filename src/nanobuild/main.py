@@ -5,7 +5,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Set, TextIO, Tuple, Union
+from typing import Dict, Iterator, List, Mapping, Optional, Set, TextIO, Tuple, Union
 
 import ninja_syntax
 
@@ -37,22 +37,40 @@ class Nanobuild(object):
             except ValueError:
                 return str(path)
 
-    def _collect_used_rules(self, *targets: object) -> Set[Tuple[int, str]]:
-        """Return the set of ``(environment id, builder_id)`` pairs actually used by the graph.
+    @staticmethod
+    def _command_line(command: str) -> str:
+        """Translate a Command template to a ninja command line.
 
-        Only these become ninja rules, so build.ninja doesn't carry rules for builders that the
-        build never invokes. ``Phony`` is excluded because it maps to ninja's built-in rule.
+        Only ``{IN}``/``{OUT}`` are substituted (via plain replacement, so literal braces in the
+        command — e.g. ``find -exec {} ;`` — are left untouched).
         """
-        used: Set[Tuple[int, str]] = set()
+        return command.replace('{IN}', '$in').replace('{OUT}', '$out')
+
+    def _iter_targets(self, *targets: object) -> Iterator[Target]:
+        """Yield every Target reachable from ``targets`` once, in deterministic breadth-first order."""
+        seen: Set[int] = set()
         queue: List[object] = list(targets)
         while queue:
             target = queue.pop(0)
-            if not isinstance(target, Target):
+            if not isinstance(target, Target) or id(target) in seen:
                 continue
-            if target.builder_id != 'Phony':
-                used.add((id(target.environment), target.builder_id))
+            seen.add(id(target))
+            yield target
             queue.extend(target.inputs)
             queue.extend(target.deps)
+
+    def _collect_used_rules(self, *targets: object) -> Set[Tuple[int, str]]:
+        """Return the set of ``(environment id, builder_id)`` pairs that use a shared ninja rule.
+
+        Only these become shared rules, so build.ninja doesn't carry rules for builders the build
+        never invokes. Phony targets (Alias output) map to ninja's built-in rule, and Command
+        targets (custom command) get their own per-target rule, so both are excluded here.
+        """
+        used: Set[Tuple[int, str]] = set()
+        for target in self._iter_targets(*targets):
+            if isinstance(target.output, Alias) or target.command is not None:
+                continue
+            used.add((id(target.environment), target.builder_id))
         return used
 
     def generate_ninja(self, *targets: object) -> str:
@@ -114,10 +132,23 @@ class Nanobuild(object):
                 writer.rule(f"{key}_{i}", command.format_map(substitutions))
             writer.newline()
 
-        # generate build
-        queue: List[Target] = [*targets]
-        while len(queue) > 0:
-            target = queue.pop(0)
+        # Command targets each carry their own command, so they get a dedicated rule. Identical
+        # commands share a rule. command_rules maps the final command line to its rule name.
+        command_rules: Dict[str, str] = {}
+        for target in self._iter_targets(*targets):
+            if target.command is None:
+                continue
+            final = self._command_line(target.command)
+            if final not in command_rules:
+                name = f"Command_{len(command_rules)}"
+                writer.rule(name, final)
+                command_rules[final] = name
+        if command_rules:
+            writer.newline()
+
+        # generate build statements (one per unique target; a shared target must not be emitted
+        # twice or ninja rejects the duplicate output)
+        for target in self._iter_targets(*targets):
             inputs: List[str] = []
             order_only: List[str] = []
 
@@ -125,7 +156,6 @@ class Nanobuild(object):
                 if isinstance(input, Target):
                     if input.output is not None:
                         inputs.append(self._normpath(input.output))
-                    queue.append(input)
                 elif isinstance(input, Path):
                     inputs.append(self._normpath(input))
                 else:
@@ -135,7 +165,6 @@ class Nanobuild(object):
                 if isinstance(dep, Target):
                     if dep.output is not None:
                         order_only.append(self._normpath(dep.output))
-                    queue.append(dep)
                 elif isinstance(dep, Path):
                     order_only.append(self._normpath(dep))
                 else:
@@ -144,9 +173,12 @@ class Nanobuild(object):
             output = target.output
             output_str: Optional[str] = self._normpath(output) if output is not None else None
 
-            rule_name = f"{target.builder_id}_{env_index[id(target.environment)]}"
-            if target.builder_id == 'Phony':
+            if isinstance(target.output, Alias):
                 rule_name = 'phony'
+            elif target.command is not None:
+                rule_name = command_rules[self._command_line(target.command)]
+            else:
+                rule_name = f"{target.builder_id}_{env_index[id(target.environment)]}"
 
             writer.build(outputs=output_str,
                          rule=rule_name,

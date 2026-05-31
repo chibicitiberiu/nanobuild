@@ -42,10 +42,12 @@ nb.run(binary)
 | `CCLink`           | `CC`, `LINKFLAGS`, `LIBS`          | `{CC} {LINKFLAGS} -o {OUT} {IN} {LIBS}`       | yes         | no                   |
 | `CPPLink` / `CXXLink` | `CXX`, `LINKFLAGS`, `LIBS`      | `{CXX} {LINKFLAGS} -o {OUT} {IN} {LIBS}`      | yes         | no                   |
 | `StaticLink`       | `AR`                               | `{AR} -o {OUT} {IN}`                          | yes         | no                   |
-| `Phony`            | —                                  | (no command)                                  | yes         | no                   |
+| `Phony` / `Depends`| —                                  | (no command)                                  | yes         | no                   |
 | `Copy`             | —                                  | `cp {IN} {OUT}` / `copy /Y {IN} {OUT}`        | no          | no                   |
+| `Command`          | —                                  | (supplied per call via `command=`)            | yes         | no                   |
 
-`CPP` and `CXX` are two names for the same C++ compile builder; likewise `CPPLink` and `CXXLink`.
+`CPP` and `CXX` are two names for the same C++ compile builder; likewise `CPPLink` and `CXXLink`,
+and `Phony` and `Depends`.
 
 `Copy` copies a single input file to its output (the command is chosen for the host platform).
 Ninja creates the output's parent directory automatically, so no separate `mkdir` step is needed:
@@ -71,7 +73,22 @@ single output, so you must supply the `output` name:
 binary = env.CXXLink(objects, 'app')
 ```
 
-### Phony targets
+### Batch mapping with an output function
+
+For a single-input builder you can pass a **callable** as `output` to map it over a list of inputs,
+deriving each output from its input. This is the general form of the `%.o: %.c` pattern for any
+builder (not just the compilers, which already autogenerate `.o` names):
+
+```Python
+# copy every header into the build dir, preserving names
+env.Copy(env.source_glob('include/*.h'), output=lambda src: src.name)
+```
+
+The function receives each input path and returns the output name (a `str`, resolved against the
+build directory, or a `Path`). This only works for single-input builders — multi-input builders
+consume all their inputs into one output.
+
+### Phony / Depends targets
 
 `Phony` groups several targets under a single symbolic name without producing a file. The `output`
 argument is required and is interpreted as the alias name:
@@ -82,7 +99,24 @@ all_objs = env.Phony(objects, 'objects')          # an alias, not a file
 binary  = env.CXXLink(all_objs, 'app')
 ```
 
-In the generated `build.ninja` this becomes ninja's built-in `phony` rule.
+`Depends` is an alias for `Phony` that reads more naturally when the intent is purely to pin build
+ordering (a fake node that other targets depend on). In the generated `build.ninja` both become
+ninja's built-in `phony` rule.
+
+### Command (arbitrary shell steps)
+
+`Command` runs a one-off shell command, for build steps that aren't covered by a dedicated builder
+(generating a disk image, installing a bootloader, running `objcopy`, ...). Supply the command via
+`command=`, using `{IN}`/`{OUT}` for the inputs and output:
+
+```Python
+kernel = env.CXXLink(objects, 'kernel.elf')
+image  = env.Command(kernel, 'disk.img', command='dd if={IN} of={OUT} bs=512 conv=notrunc')
+```
+
+Each distinct command becomes its own ninja rule (identical commands are shared). Only `{IN}` and
+`{OUT}` are substituted, so literal braces in the command are left untouched; bake any other values
+into the string with ordinary Python (e.g. an f-string).
 
 ## Creating custom builders
 

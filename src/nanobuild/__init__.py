@@ -11,6 +11,7 @@ from .builder import (
     Builder,
     CBuilder,
     CCLinkBuilder,
+    CommandBuilder,
     CopyBuilder,
     CXXBuilder,
     CXXLinkBuilder,
@@ -26,7 +27,7 @@ from .utility import Utility
 __all__ = [
     'run', 'import_file',
     'Alias', 'Builder', 'Environment', 'Nanobuild', 'Target', 'Utility',
-    'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder',
+    'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder', 'CommandBuilder',
     'StaticLinkBuilder', 'LDLinkBuilder', 'CCLinkBuilder', 'CXXLinkBuilder',
 ]
 

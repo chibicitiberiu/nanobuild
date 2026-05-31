@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, List, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Union
 
 from .utility import Utility
 
@@ -34,6 +34,8 @@ class Target(abc.ABC):
     :param deps: Order-only dependencies (rebuilt before this target, but do not by
         themselves trigger a rebuild), e.g. header files.
     :param environment: The :class:`~nanobuild.environment.Environment` this target belongs to.
+    :param command: For ``Command`` targets, the per-target shell command template (``{IN}``/``{OUT}``
+        placeholders). ``None`` for targets that use their builder's shared rule.
     """
 
     def __init__(self,
@@ -41,9 +43,11 @@ class Target(abc.ABC):
                  inputs: InputLike,
                  output: OutputLike,
                  deps: InputLike,
-                 environment: Environment) -> None:
+                 environment: Environment,
+                 command: Optional[str] = None) -> None:
         self.builder_id: str = builder_id
         self.output: OutputLike = output
         self.inputs: List[Union[str, Path, Target]] = Utility.flatten_list(inputs)
         self.deps: List[Union[str, Path, Target]] = Utility.flatten_list(deps)
         self.environment: Environment = environment
+        self.command: Optional[str] = command

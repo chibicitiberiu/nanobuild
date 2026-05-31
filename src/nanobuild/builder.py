@@ -104,11 +104,31 @@ class CXXBuilder(Builder):
 
 
 class PhonyBuilder(Builder):
-    name = 'Phony'
+    # 'Depends' is an alias: a phony node is most often used purely to pin build ordering,
+    # for which "Depends" reads more naturally than "Phony".
+    name = ['Phony', 'Depends']
     multi_input = True
     autogenerate_output = False
 
     def generate(self) -> Optional[str]:
+        return None
+
+
+class CommandBuilder(Builder):
+    """Runs an arbitrary, per-invocation shell command.
+
+    Supply the command via the ``command=`` argument, e.g.
+    ``env.Command(inputs, 'disk.img', command='dd if={IN} of={OUT} bs=512')``. Use ``{IN}`` and
+    ``{OUT}`` for the inputs and output; bake any other values into the string with ordinary Python.
+    Unlike the other builders the command is per-target, so each distinct command becomes its own
+    ninja rule.
+    """
+    name = 'Command'
+    multi_input = True
+    autogenerate_output = False
+
+    def generate(self) -> Optional[str]:
+        # No shared template: the command is provided per target (see Environment.build).
         return None
 
 
@@ -192,6 +212,6 @@ class CXXLinkBuilder(Builder):
 
 __all__ = [
     'Builder', 'Vars',
-    'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder',
+    'ASBuilder', 'CBuilder', 'CXXBuilder', 'PhonyBuilder', 'CopyBuilder', 'CommandBuilder',
     'StaticLinkBuilder', 'LDLinkBuilder', 'CCLinkBuilder', 'CXXLinkBuilder',
 ]
