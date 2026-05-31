@@ -1,5 +1,10 @@
 # Changelog history
 
+## 0.4.1 - 2026-05-31
+
+- Added a Documentation link (https://chibicitiberiu.github.io/nanobuild/) to the package's PyPI
+  metadata and the README.
+
 ## 0.4 - 2026-05-31
 
 - Added a `Command` builder for arbitrary, per-invocation shell build steps
